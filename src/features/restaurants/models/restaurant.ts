@@ -1,5 +1,3 @@
-import type { Timestamp } from 'firebase/firestore'
-
 export interface Restaurant {
   id: string
   ownerId: string
@@ -11,8 +9,8 @@ export interface Restaurant {
   latitude: number | null
   longitude: number | null
   photoURLs: string[]
-  createdAt: Timestamp
-  updatedAt: Timestamp
+  createdAt: Date
+  updatedAt: Date
   schemaVersion: 1
 }
 

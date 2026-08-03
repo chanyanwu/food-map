@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing'
-import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs, getDoc, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore'
 import { getBytes, ref, uploadString } from 'firebase/storage'
 
 const projectId = 'demo-food-map'
@@ -164,6 +164,25 @@ describe('Firestore restaurant rules', () => {
     const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')
     await assertSucceeds(setDoc(restaurantReference, restaurant('restaurant-1', 'alice')))
     await assertSucceeds(deleteDoc(restaurantReference))
+  })
+
+  it('allows an owner to query only their restaurants', async () => {
+    await testEnvironment.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(), 'restaurants', 'restaurant-1'), restaurant('restaurant-1', 'alice'))
+      await setDoc(doc(context.firestore(), 'restaurants', 'restaurant-2'), restaurant('restaurant-2', 'bob'))
+    })
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    const restaurantsQuery = query(collection(firestore, 'restaurants'), where('ownerId', '==', 'alice'), orderBy('createdAt', 'desc'))
+    await assertSucceeds(getDocs(restaurantsQuery))
+  })
+
+  it('denies querying another owner restaurants', async () => {
+    await testEnvironment.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(), 'restaurants', 'restaurant-1'), restaurant('restaurant-1', 'alice'))
+    })
+    const firestore = testEnvironment.authenticatedContext('bob').firestore()
+    const restaurantsQuery = query(collection(firestore, 'restaurants'), where('ownerId', '==', 'alice'), orderBy('createdAt', 'desc'))
+    await assertFails(getDocs(restaurantsQuery))
   })
 })
 

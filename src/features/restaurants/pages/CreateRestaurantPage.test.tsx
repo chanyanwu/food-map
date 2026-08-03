@@ -14,7 +14,7 @@ function renderPage(repository: RestaurantRepository) {
 
 describe('CreateRestaurantPage', () => {
   it('does not submit without a restaurant name', async () => {
-    const repository = { createRestaurant: vi.fn() }
+    const repository = { createRestaurant: vi.fn(), getRestaurantsByOwner: vi.fn() }
     renderPage(repository)
     fireEvent.click(await screen.findByRole('button', { name: '新增店家' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('請填寫店家名稱。')
@@ -22,7 +22,7 @@ describe('CreateRestaurantPage', () => {
   })
 
   it('submits valid restaurant details for the authenticated user', async () => {
-    const repository = { createRestaurant: vi.fn().mockResolvedValue(undefined) }
+    const repository = { createRestaurant: vi.fn().mockResolvedValue(undefined), getRestaurantsByOwner: vi.fn() }
     renderPage(repository)
     fireEvent.change(await screen.findByRole('textbox', { name: '店家名稱' }), { target: { value: 'Food Map Cafe' } })
     fireEvent.change(screen.getByRole('textbox', { name: '地址' }), { target: { value: 'Taipei' } })
@@ -32,7 +32,7 @@ describe('CreateRestaurantPage', () => {
   })
 
   it('shows a readable error when saving fails', async () => {
-    const repository = { createRestaurant: vi.fn().mockRejectedValue(new Error('unavailable')) }
+    const repository = { createRestaurant: vi.fn().mockRejectedValue(new Error('unavailable')), getRestaurantsByOwner: vi.fn() }
     renderPage(repository)
     fireEvent.change(await screen.findByRole('textbox', { name: '店家名稱' }), { target: { value: 'Food Map Cafe' } })
     fireEvent.click(screen.getByRole('button', { name: '新增店家' }))

@@ -34,12 +34,23 @@ a { color: inherit; }
 .restaurant-form input, .restaurant-form select, .restaurant-form textarea { width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border: 2px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); }
 .restaurant-form textarea { min-height: 7rem; resize: vertical; }
 .restaurant-form input:focus-visible, .restaurant-form select:focus-visible, .restaurant-form textarea:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.restaurant-list { display: grid; gap: var(--space-3); }
+.restaurant-list h2, .restaurant-list h3, .restaurant-list p { margin: 0; }
+.restaurant-list-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.restaurant-list-heading h2 { font-size: 1.3rem; }
+.restaurant-list-heading p, .restaurant-card > p { color: var(--color-muted); }
+.restaurant-grid { display: grid; gap: var(--space-3); }
+.restaurant-card { display: grid; gap: var(--space-2); padding: var(--space-4); }
+.restaurant-card > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.restaurant-card h3 { font-size: 1.1rem; }
+.restaurant-rating { color: var(--color-brand-strong) !important; font-weight: 800; }
+.restaurant-notes { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 
 @media (min-width: 48rem) {
   .app-shell { padding: var(--space-6); }
   .page { grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr); gap: var(--space-8); }
   .page > .brand { grid-column: 1 / -1; align-self: start; }
   .page > .hero-copy { grid-column: 1; }
-  .page > .feature-list, .page > .login-card, .page > .notice, .page > .restaurant-form { grid-column: 2; }
+  .page > .feature-list, .page > .login-card, .page > .notice, .page > .restaurant-form, .page > .restaurant-list { grid-column: 2; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
