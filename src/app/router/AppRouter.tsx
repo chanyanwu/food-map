@@ -3,6 +3,7 @@ import { useAuth } from '../../features/authentication/hooks/useAuth'
 import { LoginPage } from '../../features/authentication/pages/LoginPage'
 import { PrivateHomePage } from '../../features/authentication/pages/PrivateHomePage'
 import { CreateRestaurantPage } from '../../features/restaurants/pages/CreateRestaurantPage'
+import { EditRestaurantPage } from '../../features/restaurants/pages/EditRestaurantPage'
 import { NotFoundPage } from '../../shared/pages/NotFoundPage'
 import { OfflinePage } from '../../shared/pages/OfflinePage'
 
@@ -44,6 +45,7 @@ export function AppRouter() {
     <Routes>
       <Route path="/" element={<ProtectedRoute><PrivateHomePage /></ProtectedRoute>} />
       <Route path="/restaurants/new" element={<ProtectedRoute><CreateRestaurantPage /></ProtectedRoute>} />
+      <Route path="/restaurants/:restaurantId/edit" element={<ProtectedRoute><EditRestaurantPage /></ProtectedRoute>} />
       <Route path="/login" element={<PublicLoginRoute />} />
       <Route path="/offline" element={<OfflinePage />} />
       <Route path="*" element={<NotFoundPage />} />

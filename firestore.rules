@@ -64,6 +64,7 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
       allow update: if isOwner(resource.data.ownerId)
         && validRestaurant(request.resource.data, restaurantId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'address', 'category', 'rating', 'notes', 'updatedAt'])
         && request.resource.data.ownerId == resource.data.ownerId
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.updatedAt == request.time;

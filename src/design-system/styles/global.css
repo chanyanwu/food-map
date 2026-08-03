@@ -19,6 +19,7 @@ a { color: inherit; }
 .button:hover { background: var(--color-brand-strong); }
 .button:disabled { cursor: not-allowed; opacity: 0.65; }
 .button--secondary { background: var(--color-surface); color: var(--color-brand-strong); }
+.button--danger { border-color: var(--color-danger); background: var(--color-danger); }
 .card { border: 2px solid var(--color-line); border-radius: 15px 18px 14px 17px; background: var(--color-surface); box-shadow: var(--shadow-card); }
 .feature-list { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
 .feature-list li { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); }
@@ -45,6 +46,8 @@ a { color: inherit; }
 .restaurant-card h3 { font-size: 1.1rem; }
 .restaurant-rating { color: var(--color-brand-strong) !important; font-weight: 800; }
 .restaurant-notes { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.restaurant-card-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-1); }
+.restaurant-card-actions .button { min-height: 40px; padding: 0.45rem 0.75rem; }
 
 @media (min-width: 48rem) {
   .app-shell { padding: var(--space-6); }

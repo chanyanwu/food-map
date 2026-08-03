@@ -159,6 +159,24 @@ describe('Firestore restaurant rules', () => {
     await assertFails(updateDoc(restaurantReference, { ownerId: 'bob', updatedAt: serverTimestamp() }))
   })
 
+  it('denies non-owners from updating and deleting a restaurant', async () => {
+    await testEnvironment.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(), 'restaurants', 'restaurant-1'), restaurant('restaurant-1', 'alice'))
+    })
+    const restaurantReference = doc(testEnvironment.authenticatedContext('bob').firestore(), 'restaurants', 'restaurant-1')
+    await assertFails(updateDoc(restaurantReference, { notes: 'Nope', updatedAt: serverTimestamp() }))
+    await assertFails(deleteDoc(restaurantReference))
+  })
+
+  it('denies changing immutable restaurant fields', async () => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')
+    await assertSucceeds(setDoc(restaurantReference, restaurant('restaurant-1', 'alice')))
+    await assertFails(updateDoc(restaurantReference, { id: 'restaurant-2', updatedAt: serverTimestamp() }))
+    await assertFails(updateDoc(restaurantReference, { createdAt: serverTimestamp(), updatedAt: serverTimestamp() }))
+    await assertFails(updateDoc(restaurantReference, { schemaVersion: 2, updatedAt: serverTimestamp() }))
+  })
+
   it('allows an owner to delete their restaurant', async () => {
     const firestore = testEnvironment.authenticatedContext('alice').firestore()
     const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')

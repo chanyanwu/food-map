@@ -1,5 +1,5 @@
-import { collection, doc, getDocs, orderBy, query, serverTimestamp, setDoc, where, type DocumentData, type Firestore, type QueryDocumentSnapshot } from 'firebase/firestore'
-import type { CreateRestaurantInput, Restaurant } from '../models/restaurant'
+import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc, updateDoc, where, type DocumentData, type Firestore, type QueryDocumentSnapshot } from 'firebase/firestore'
+import type { CreateRestaurantInput, Restaurant, UpdateRestaurantInput } from '../models/restaurant'
 import type { RestaurantRepository } from './RestaurantRepository'
 
 export class FirebaseRestaurantRepository implements RestaurantRepository {
@@ -32,6 +32,29 @@ export class FirebaseRestaurantRepository implements RestaurantRepository {
     )
     const snapshot = await getDocs(restaurantsQuery)
     return snapshot.docs.map(toRestaurant)
+  }
+
+  async getRestaurantById(restaurantId: string): Promise<Restaurant | null> {
+    const snapshot = await getDoc(doc(this.firestore, 'restaurants', restaurantId))
+    return snapshot.exists() ? toRestaurant(snapshot) : null
+  }
+
+  async updateRestaurant(restaurantId: string, ownerId: string, input: UpdateRestaurantInput): Promise<void> {
+    const restaurant = doc(this.firestore, 'restaurants', restaurantId)
+    await this.assertOwner(restaurantId, ownerId)
+    await updateDoc(restaurant, { ...input, updatedAt: serverTimestamp() })
+  }
+
+  async deleteRestaurant(restaurantId: string, ownerId: string): Promise<void> {
+    const restaurant = doc(this.firestore, 'restaurants', restaurantId)
+    await this.assertOwner(restaurantId, ownerId)
+    await deleteDoc(restaurant)
+  }
+
+  private async assertOwner(restaurantId: string, ownerId: string): Promise<void> {
+    const restaurant = await this.getRestaurantById(restaurantId)
+    if (!restaurant) throw new Error('restaurant/not-found')
+    if (restaurant.ownerId !== ownerId) throw new Error('restaurant/permission-denied')
   }
 }
 

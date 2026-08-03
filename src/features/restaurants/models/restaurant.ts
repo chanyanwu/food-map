@@ -22,3 +22,11 @@ export interface CreateRestaurantInput {
   rating: number | null
   notes: string
 }
+
+export interface UpdateRestaurantInput {
+  name: string
+  address: string
+  category: string
+  rating: number | null
+  notes: string
+}
