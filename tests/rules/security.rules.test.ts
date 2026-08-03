@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing'
-import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
 import { getBytes, ref, uploadString } from 'firebase/storage'
 
 const projectId = 'demo-food-map'
@@ -13,6 +13,24 @@ function profile(id: string) {
     displayName: 'Food Mapper',
     email: `${id}@example.com`,
     photoURL: null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    schemaVersion: 1
+  }
+}
+
+function restaurant(id: string, ownerId: string) {
+  return {
+    id,
+    ownerId,
+    name: 'Food Map Cafe',
+    address: 'Taipei',
+    category: 'Cafe',
+    rating: 5,
+    notes: '',
+    latitude: null,
+    longitude: null,
+    photoURLs: [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     schemaVersion: 1
@@ -103,6 +121,49 @@ describe('Firestore profile rules', () => {
   it('denies undefined Firestore paths', async () => {
     const alice = testEnvironment.authenticatedContext('alice').firestore()
     await assertFails(getDoc(doc(alice, 'restaurants', 'restaurant-1')))
+  })
+})
+
+describe('Firestore restaurant rules', () => {
+  it('denies anonymous restaurant creation', async () => {
+    const firestore = testEnvironment.unauthenticatedContext().firestore()
+    await assertFails(setDoc(doc(firestore, 'restaurants', 'restaurant-1'), restaurant('restaurant-1', 'alice')))
+  })
+
+  it('allows an owner to create and read their restaurant', async () => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')
+    await assertSucceeds(setDoc(restaurantReference, restaurant('restaurant-1', 'alice')))
+    await assertSucceeds(getDoc(restaurantReference))
+  })
+
+  it('denies reading another owner restaurant', async () => {
+    await testEnvironment.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(), 'restaurants', 'restaurant-1'), restaurant('restaurant-1', 'alice'))
+    })
+    const firestore = testEnvironment.authenticatedContext('bob').firestore()
+    await assertFails(getDoc(doc(firestore, 'restaurants', 'restaurant-1')))
+  })
+
+  it('allows an owner to update their restaurant', async () => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')
+    await assertSucceeds(setDoc(restaurantReference, restaurant('restaurant-1', 'alice')))
+    await assertSucceeds(updateDoc(restaurantReference, { notes: 'Updated', updatedAt: serverTimestamp() }))
+  })
+
+  it('denies changing a restaurant owner', async () => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')
+    await assertSucceeds(setDoc(restaurantReference, restaurant('restaurant-1', 'alice')))
+    await assertFails(updateDoc(restaurantReference, { ownerId: 'bob', updatedAt: serverTimestamp() }))
+  })
+
+  it('allows an owner to delete their restaurant', async () => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')
+    await assertSucceeds(setDoc(restaurantReference, restaurant('restaurant-1', 'alice')))
+    await assertSucceeds(deleteDoc(restaurantReference))
   })
 })
 

@@ -3,7 +3,7 @@
 * { box-sizing: border-box; }
 html { background: var(--color-paper); }
 body { min-width: 320px; margin: 0; color: var(--color-ink); background-color: var(--color-paper); background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgb(110 81 55 / 4%) 28px); font-family: ui-rounded, "SF Pro Rounded", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; line-height: 1.5; }
-button, input { font: inherit; }
+button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, a:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }
 a { color: inherit; }
@@ -28,12 +28,18 @@ a { color: inherit; }
 .notice p, .login-card p { margin: var(--space-2) 0 0; color: var(--color-muted); }
 .login-card { width: min(100%, 29rem); }
 .form-error { color: var(--color-danger) !important; font-weight: 700; }
+.success-message { margin: var(--space-3) 0 0; color: var(--color-mint); font-weight: 700; }
+.restaurant-form { display: grid; width: min(100%, 34rem); gap: var(--space-3); padding: var(--space-5); }
+.restaurant-form label { display: grid; gap: var(--space-1); color: var(--color-muted); font-weight: 700; }
+.restaurant-form input, .restaurant-form select, .restaurant-form textarea { width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border: 2px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); }
+.restaurant-form textarea { min-height: 7rem; resize: vertical; }
+.restaurant-form input:focus-visible, .restaurant-form select:focus-visible, .restaurant-form textarea:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
 
 @media (min-width: 48rem) {
   .app-shell { padding: var(--space-6); }
   .page { grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr); gap: var(--space-8); }
   .page > .brand { grid-column: 1 / -1; align-self: start; }
   .page > .hero-copy { grid-column: 1; }
-  .page > .feature-list, .page > .login-card, .page > .notice { grid-column: 2; }
+  .page > .feature-list, .page > .login-card, .page > .notice, .page > .restaurant-form { grid-column: 2; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }

@@ -22,6 +22,28 @@ service cloud.firestore {
         && data.schemaVersion == 1;
     }
 
+    function isRatingOrNull(value) {
+      return value is number && value >= 1 && value <= 5 || value == null;
+    }
+
+    function validRestaurant(data, restaurantId) {
+      return data.keys().hasOnly(['id', 'ownerId', 'name', 'address', 'category', 'rating', 'notes', 'latitude', 'longitude', 'photoURLs', 'createdAt', 'updatedAt', 'schemaVersion'])
+        && data.keys().hasAll(['id', 'ownerId', 'name', 'address', 'category', 'rating', 'notes', 'latitude', 'longitude', 'photoURLs', 'createdAt', 'updatedAt', 'schemaVersion'])
+        && data.id == restaurantId
+        && data.ownerId == request.auth.uid
+        && data.name is string && data.name.size() > 0
+        && data.address is string
+        && data.category is string
+        && isRatingOrNull(data.rating)
+        && data.notes is string
+        && (data.latitude is number || data.latitude == null)
+        && (data.longitude is number || data.longitude == null)
+        && data.photoURLs is list
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.schemaVersion is int && data.schemaVersion == 1;
+    }
+
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow create: if isOwner(userId)
@@ -32,6 +54,20 @@ service cloud.firestore {
         && validProfile(request.resource.data)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'email', 'photoURL', 'updatedAt'])
         && request.resource.data.updatedAt == request.time;
+    }
+
+    match /restaurants/{restaurantId} {
+      allow get: if isOwner(resource.data.ownerId);
+      allow create: if request.auth != null
+        && validRestaurant(request.resource.data, restaurantId)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isOwner(resource.data.ownerId)
+        && validRestaurant(request.resource.data, restaurantId)
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isOwner(resource.data.ownerId);
     }
   }
 }
