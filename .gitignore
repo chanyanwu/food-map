@@ -9,3 +9,8 @@ playwright-report/
 test-results/
 coverage/
 *.tsbuildinfo
+# Firebase Emulator logs
+firestore-debug.log
+storage-debug.log
+firebase-debug.log
+ui-debug.log

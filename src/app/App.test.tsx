@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { App } from './App'
 
 describe('App', () => {
-  it('renders the mobile-first welcome screen', () => {
+  it('shows a configuration error instead of a blank page without Firebase configuration', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { name: '記下每一次好好吃飯。' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /前往登入/ })).toHaveAttribute('href', '#/login')
+    expect(screen.getByRole('heading', { name: '目前無法確認登入狀態。' })).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('Firebase 尚未設定')
   })
 })

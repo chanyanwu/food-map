@@ -2,7 +2,7 @@
 
 ## Product and Stage Boundary
 
-Food Map is a mobile-first private food-map PWA built with React, TypeScript, Vite, Firebase, and GitHub Pages. Stage 0 establishes the client shell only. It does not create a Firebase project or implement authentication, Firestore, Storage, maps, location, CRUD, uploads, OCR, or social-link parsing.
+Food Map is a mobile-first private food-map PWA built with React, TypeScript, Vite, Firebase, and GitHub Pages. Stage 1 implements Google Authentication, a private home placeholder, user profiles, Firebase Emulator configuration, and restrictive Firestore/Storage Rules. It does not implement restaurant data, maps, location, uploads, OCR, or social-link parsing.
 
 ## Application Structure
 
@@ -26,7 +26,7 @@ Planned interfaces are `AuthRepository`, `RestaurantRepository`, `VisitRecordRep
 
 ## Routing, PWA, and Deployment
 
-Vite uses `base: '/food-map/'`. `HashRouter` keeps client route state after `#`, avoiding GitHub Pages direct-link 404s. Current routes are `/`, `/login`, `/offline`, and catch-all Not Found.
+Vite uses `base: '/food-map/'`. `HashRouter` keeps client route state after `#`, avoiding GitHub Pages direct-link 404s. `/` is protected, `/login` is public and redirects authenticated users to their requested path, `/offline` and Not Found stay public. `ProtectedRoute` records the requested hash route before redirecting unauthenticated users.
 
 `vite-plugin-pwa` supplies the app-shell precache, manifest, and service-worker registration. The manifest uses `start_url: '/food-map/#/'` and `scope: '/food-map/'`. The Stage 0 offline page is a route placeholder, not a promise that every un-cached navigation works offline.
 
@@ -34,7 +34,7 @@ GitHub Actions deploys `dist` after `npm ci`, lint, typecheck, test, and build o
 
 ## Firebase Boundary
 
-`src/app/config/firebase.ts` maps only Vite environment values into a typed public Firebase Web config. It deliberately has no Firebase SDK import and does not initialize a project. Firebase Web config is not a secret or security mechanism; authentication and Firebase Security Rules are the security boundary.
+`src/app/config/firebase.ts` maps only Vite environment values into a typed public Firebase Web config. `core/firebase/firebaseClient.ts` is the only Firebase initialization adapter. `AuthProvider` composes `FirebaseAuthRepository` and `FirebaseUserProfileRepository`; UI uses `useAuth` and never calls Firebase SDK APIs. Missing configuration renders a clear error screen. `VITE_USE_FIREBASE_EMULATOR=true` connects local development only; production builds cannot connect to localhost.
 
 Never put Firebase Admin keys, service-account JSON, AI secrets, server API secrets, or Google Maps server keys in React or `VITE_` variables.
 
@@ -70,9 +70,15 @@ Storage uses private paths such as `users/{uid}/restaurants/{restaurantId}/{phot
 
 ## Security Plan
 
-Stage 1 Firestore Rules will require `request.auth != null`, match user path to `request.auth.uid`, require immutable `ownerId`, validate required field types and rating ranges, and verify ownership for reads, creates, updates, and deletes. Storage Rules will require `users/{uid}/...`, matching uid, allowed image MIME types, and a maximum size.
+Stage 1 Firestore Rules allow only `users/{uid}` for its authenticated owner. They require matching path and `id`, a fixed schemaVersion 1, allowed profile fields, server timestamp creation/update fields, and immutable `id`/`createdAt`. All other Firestore paths are denied. Storage Rules only allow `users/{uid}/...` for that same authenticated uid; all other paths are denied. MIME and size constraints wait for Stage 6 because Stage 1 has no upload feature.
 
 Firebase Emulator Suite tests will prove anonymous denial, cross-user denial, ownerId tampering denial, valid owner access, and Storage MIME/size restrictions. Front-end query constraints are never treated as authorization.
+
+## Dependency Risk Register
+
+| Advisory | Package | npm severity | Affected capability | Used here? | Temporary decision | Re-evaluate when |
+| --- | --- | --- | --- | --- | --- | --- |
+| GHSA-qwww-vcr4-c8h2 | `react-router@7.18.2` | high | React Server Components action handling | No. Food Map is a Vite SPA using HashRouter; it has no RSC, framework mode, server actions, or unstable RSC APIs. | Accept temporarily; do not run `npm audit fix --force` or arbitrarily downgrade/major-upgrade only to reduce audit count. | A compatible fixed React Router release is available, or the app adopts SSR/RSC/framework APIs. |
 
 ## Map Decision for Stage 3
 

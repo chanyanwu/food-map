@@ -27,6 +27,7 @@ a { color: inherit; }
 .notice h2, .login-card h2 { margin: var(--space-2) 0 0; font-size: 1.1rem; }
 .notice p, .login-card p { margin: var(--space-2) 0 0; color: var(--color-muted); }
 .login-card { width: min(100%, 29rem); }
+.form-error { color: var(--color-danger) !important; font-weight: 700; }
 
 @media (min-width: 48rem) {
   .app-shell { padding: var(--space-6); }

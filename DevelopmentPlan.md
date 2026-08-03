@@ -1,6 +1,6 @@
 # Food Map Development Plan
 
-## Stage 0: Foundation (Current)
+## Stage 0: Foundation (Complete)
 
 Create a React + TypeScript + Vite application with mobile-first welcome and login-placeholder pages, HashRouter, PWA shell, typed Firebase configuration boundary, tests, GitHub Pages workflow, and documentation. No Firebase project or SDK connection is included.
 
@@ -14,9 +14,9 @@ Acceptance criteria:
 
 ## Stage 1: Google Sign-In and Data Security
 
-Add Firebase SDK adapters, Emulator configuration, Google Sign-In, auth state, protected routes, logout/private-state cleanup, Firestore/Storage Rules, and Rules tests.
+Firebase modular SDK adapters, Google Sign-In, `AuthProvider`, `useAuth`, `AuthRepository`, `UserProfileRepository`, protected routes, logout/private-state cleanup, restrictive Firestore/Storage Rules, and an isolated Emulator test suite are implemented. The private root route now shows a Stage 1 placeholder only.
 
-Acceptance criteria: anonymous and cross-user access are denied in Emulator tests; valid users access only their own data; ownerId tampering is denied; logout clears private UI state.
+Remaining local acceptance step: install Java 11+ and run `npm run test:rules`. It must prove anonymous and cross-user access denial, owner profile access, profile validation, Storage path isolation, and default denial. No restaurant or other Stage 2 data model is included.
 
 ## Stage 2: Models and Restaurant CRUD
 
@@ -65,6 +65,6 @@ Enable Firestore persistent cache, add sync state and PWA update UI, evaluate De
 
 ## Current Risks
 
-- Node.js, npm, and Git are unavailable on the current terminal PATH, so dependencies cannot be installed and executable checks cannot run yet.
+- Firebase Emulator Rules tests require Java 11+ on each development/CI machine.
+- Google sign-in requires the documented Firebase Console setup and GitHub Pages hostname authorization.
 - SVG PWA icons are suitable for the foundation but should be replaced by generated PNG icons before production iPhone installation validation.
-- GitHub Actions assumes repository name `food-map`, GitHub Pages enabled, and matching repository secrets.

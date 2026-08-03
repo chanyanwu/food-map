@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isTextOrNull(value) {
+      return value is string || value == null;
+    }
+
+    function validProfile(data) {
+      return data.keys().hasOnly(['id', 'displayName', 'email', 'photoURL', 'createdAt', 'updatedAt', 'schemaVersion'])
+        && data.keys().hasAll(['id', 'displayName', 'email', 'photoURL', 'createdAt', 'updatedAt', 'schemaVersion'])
+        && data.id == request.auth.uid
+        && isTextOrNull(data.displayName)
+        && isTextOrNull(data.email)
+        && isTextOrNull(data.photoURL)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.schemaVersion is int
+        && data.schemaVersion == 1;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && validProfile(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isOwner(userId)
+        && validProfile(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'email', 'photoURL', 'updatedAt'])
+        && request.resource.data.updatedAt == request.time;
+    }
+  }
+}
