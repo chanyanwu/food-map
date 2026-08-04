@@ -1,9 +1,22 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { AuthProvider } from '../providers/AuthProvider'
 import { MockAuthRepository } from '../../features/authentication/repositories/MockAuthRepository'
 import { AppRouter } from './AppRouter'
+
+vi.mock('../../core/firebase/firebaseClient', () => ({
+  createFirebaseServices: vi.fn(() => ({ auth: {}, firestore: {}, storage: {} })),
+  shouldUseFirebaseEmulator: vi.fn(() => false)
+}))
+
+vi.mock('../../features/restaurants/repositories/FirebaseRestaurantRepository', () => ({
+  FirebaseRestaurantRepository: class {
+    getRestaurantsByOwner() {
+      return Promise.resolve([])
+    }
+  }
+}))
 
 const authenticatedUser = { id: 'alice', displayName: 'Alice', email: 'alice@example.com', photoURL: null }
 
