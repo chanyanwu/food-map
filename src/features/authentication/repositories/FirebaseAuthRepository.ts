@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth'
 import type { AuthUser } from '../models/auth'
 import type { AuthRepository, AuthStateListener } from './AuthRepository'
+import { currentSignInEnvironment, prefersRedirectSignIn, type SignInEnvironment } from '../services/signInEnvironment'
 
 function toAuthUser(user: User): AuthUser {
   return { id: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL }
@@ -20,14 +21,10 @@ function isPopupFallbackError(error: unknown): boolean {
     && (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request')
 }
 
-function prefersRedirect(): boolean {
-  return window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(pointer: coarse)').matches
-}
-
 export class FirebaseAuthRepository implements AuthRepository {
   private readonly provider = new GoogleAuthProvider()
 
-  constructor(private readonly auth: Auth) {}
+  constructor(private readonly auth: Auth, private readonly environment: () => SignInEnvironment = currentSignInEnvironment) {}
 
   subscribeToAuthState(listener: AuthStateListener): () => void {
     return onAuthStateChanged(this.auth, user => listener(user ? toAuthUser(user) : null))
@@ -38,7 +35,7 @@ export class FirebaseAuthRepository implements AuthRepository {
   }
 
   async signInWithGoogle(): Promise<void> {
-    if (prefersRedirect()) {
+    if (prefersRedirectSignIn(this.environment())) {
       await signInWithRedirect(this.auth, this.provider)
       return
     }

@@ -7,6 +7,7 @@ import { EditRestaurantPage } from '../../features/restaurants/pages/EditRestaur
 import { ImportRestaurantPage } from '../../features/imports/pages/ImportRestaurantPage'
 import { NotFoundPage } from '../../shared/pages/NotFoundPage'
 import { OfflinePage } from '../../shared/pages/OfflinePage'
+import { consumeIntendedRoute } from '../../features/authentication/services/intendedRoute'
 
 function AuthLoadingPage() {
   return <main className="app-shell"><section className="page"><div className="hero-copy"><p className="eyebrow">Food Map</p><h1 className="display">正在確認登入狀態。</h1><p className="lede" role="status">請稍候，私人內容尚未載入。</p></div></section></main>
@@ -20,7 +21,9 @@ function AuthErrorPage() {
 
 function destination(location: Location): string {
   const state = location.state
-  return typeof state === 'object' && state !== null && 'from' in state && typeof state.from === 'string' ? state.from : '/'
+  const savedRoute = consumeIntendedRoute()
+  if (typeof state === 'object' && state !== null && 'from' in state && typeof state.from === 'string') return state.from
+  return savedRoute ?? '/'
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

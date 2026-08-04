@@ -7,6 +7,7 @@ import { FirebaseUserProfileRepository } from '../../features/authentication/rep
 import type { AuthRepository } from '../../features/authentication/repositories/AuthRepository'
 import type { UserProfileRepository } from '../../features/authentication/repositories/UserProfileRepository'
 import { toFriendlyAuthError } from '../../features/authentication/services/authErrorMessage'
+import { saveIntendedRoute } from '../../features/authentication/services/intendedRoute'
 import { AuthContext, type AuthContextValue } from '../../features/authentication/context/authContext'
 
 interface AuthProviderProps {
@@ -57,8 +58,9 @@ export function AuthProvider({ children, repository, profileRepository }: AuthPr
     state,
     actionError,
     isSigningIn,
-    async signInWithGoogle() {
+    async signInWithGoogle(intendedRoute) {
       if (!activeRepository) return
+      if (intendedRoute) saveIntendedRoute(intendedRoute)
       setActionError(null)
       setIsSigningIn(true)
       try {

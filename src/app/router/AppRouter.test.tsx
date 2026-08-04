@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { AuthProvider } from '../providers/AuthProvider'
 import { MockAuthRepository } from '../../features/authentication/repositories/MockAuthRepository'
 import { AppRouter } from './AppRouter'
+import { saveIntendedRoute } from '../../features/authentication/services/intendedRoute'
 
 vi.mock('../../core/firebase/firebaseClient', () => ({
   createFirebaseServices: vi.fn(() => ({ auth: {}, firestore: {}, storage: {} })),
@@ -61,5 +62,21 @@ describe('AppRouter authentication', () => {
   it('allows an authenticated user to open the protected import route', async () => {
     renderRouter(new MockAuthRepository({ initialUser: authenticatedUser }), '/restaurants/import')
     expect(await screen.findByRole('heading', { name: '整理看到的下一間店。' })).toBeInTheDocument()
+  })
+
+  it('restores and clears the route saved before a redirect sign-in', async () => {
+    sessionStorage.clear()
+    saveIntendedRoute('/restaurants/import')
+    renderRouter(new MockAuthRepository({ initialUser: authenticatedUser }), '/login')
+    expect(await screen.findByRole('heading', { name: '整理看到的下一間店。' })).toBeInTheDocument()
+    expect(sessionStorage.getItem('food-map.intended-route')).toBeNull()
+  })
+
+  it('does not show an error when redirect completion has no result', async () => {
+    const repository = new MockAuthRepository()
+    renderRouter(repository, '/login')
+    await screen.findByRole('button', { name: '使用 Google 帳號登入' })
+    expect(repository.completeRedirectSignInCalls).toBe(1)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })

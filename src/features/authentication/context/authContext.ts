@@ -5,7 +5,7 @@ export interface AuthContextValue {
   state: AuthState
   actionError: string | null
   isSigningIn: boolean
-  signInWithGoogle(): Promise<void>
+  signInWithGoogle(intendedRoute?: string): Promise<void>
   signOut(): Promise<void>
   retry(): void
 }

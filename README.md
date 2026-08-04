@@ -80,6 +80,12 @@ The workflow in `.github/workflows/deploy-pages.yml` deploys `dist` to GitHub Pa
 6. Add `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_APP_ID`, and optional `VITE_FIREBASE_MESSAGING_SENDER_ID` as GitHub repository secrets or variables.
 7. Verify Google sign-in at `https://chanyanwu.github.io/food-map/`.
 
+### Mobile Google Sign-In
+
+Food Map uses a popup on suitable desktop browsers and a Firebase redirect flow for small touch devices, iOS, standalone PWAs, and popup-blocked browsers. Before redirecting, the requested in-app route is stored in `sessionStorage` only; no token, credential, or personal data is stored there. `onAuthStateChanged` restores the authenticated state after returning from Google.
+
+In Firebase Console, review **Authentication > Settings > Authorized domains** and add the production hostname. `localhost` authorization does not authorize a phone visiting a local network IP such as `192.168.x.x`; prefer testing phones against the deployed HTTPS URL. A local network host may need authorization for temporary testing, but production must not depend on it. LINE, Facebook, and Instagram in-app browsers can make OAuth unreliable, so open the site in Safari or Chrome. Redirect flow deployments across domains or with restrictive third-party storage policies must follow Firebase's official redirect best practices.
+
 Do not commit a real `.firebaserc`; use [.firebaserc.example](.firebaserc.example) for the safe local Emulator alias. `npm run test:rules` uses the isolated `demo-food-map` project and never deploys Rules.
 
 ## Documentation
