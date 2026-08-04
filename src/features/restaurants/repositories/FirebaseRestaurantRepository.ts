@@ -5,7 +5,7 @@ import type { RestaurantRepository } from './RestaurantRepository'
 export class FirebaseRestaurantRepository implements RestaurantRepository {
   constructor(private readonly firestore: Firestore) {}
 
-  async createRestaurant(input: CreateRestaurantInput): Promise<void> {
+  async createRestaurant(input: CreateRestaurantInput): Promise<string> {
     const restaurant = doc(collection(this.firestore, 'restaurants'))
     await setDoc(restaurant, {
       id: restaurant.id,
@@ -22,6 +22,7 @@ export class FirebaseRestaurantRepository implements RestaurantRepository {
       updatedAt: serverTimestamp(),
       schemaVersion: 1
     })
+    return restaurant.id
   }
 
   async getRestaurantsByOwner(ownerId: string): Promise<Restaurant[]> {

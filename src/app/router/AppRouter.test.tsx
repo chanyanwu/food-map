@@ -57,4 +57,9 @@ describe('AppRouter authentication', () => {
     fireEvent.click(await screen.findByRole('button', { name: '使用 Google 帳號登入' }))
     expect(await screen.findByRole('heading', { name: '歡迎回來，Mock User。' })).toBeInTheDocument()
   })
+
+  it('allows an authenticated user to open the protected import route', async () => {
+    renderRouter(new MockAuthRepository({ initialUser: authenticatedUser }), '/restaurants/import')
+    expect(await screen.findByRole('heading', { name: '整理看到的下一間店。' })).toBeInTheDocument()
+  })
 })

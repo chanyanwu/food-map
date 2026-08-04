@@ -38,6 +38,10 @@ function restaurant(id: string, ownerId: string, coordinates: Record<string, unk
   }
 }
 
+function restaurantSource(id: string, ownerId: string, overrides: Record<string, unknown> = {}) {
+  return { id, restaurantId: 'restaurant-1', ownerId, sourceType: 'social-content', sourcePlatform: 'Instagram', sourceUrl: null, sourceText: 'Food Map Cafe', sourceNote: '', mentionedDishes: ['Coffee'], createdAt: serverTimestamp(), updatedAt: serverTimestamp(), schemaVersion: 1, ...overrides }
+}
+
 beforeAll(async () => {
   const [firestoreRules, storageRules] = await Promise.all([readFile('firestore.rules', 'utf8'), readFile('storage.rules', 'utf8')])
   testEnvironment = await initializeTestEnvironment({ projectId, firestore: { rules: firestoreRules }, storage: { rules: storageRules } })
@@ -232,6 +236,63 @@ describe('Firestore restaurant rules', () => {
     const firestore = testEnvironment.authenticatedContext('bob').firestore()
     const restaurantsQuery = query(collection(firestore, 'restaurants'), where('ownerId', '==', 'alice'), orderBy('createdAt', 'desc'))
     await assertFails(getDocs(restaurantsQuery))
+  })
+})
+
+describe('Firestore restaurant source rules', () => {
+  it('allows empty, single, ten-item, and 100-character mentioned-dish lists', async () => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    await assertSucceeds(setDoc(doc(firestore, 'restaurantSources', 'source-empty'), restaurantSource('source-empty', 'alice', { mentionedDishes: [] })))
+    await assertSucceeds(setDoc(doc(firestore, 'restaurantSources', 'source-single'), restaurantSource('source-single', 'alice', { mentionedDishes: ['Coffee'] })))
+    await assertSucceeds(setDoc(doc(firestore, 'restaurantSources', 'source-ten'), restaurantSource('source-ten', 'alice', { mentionedDishes: Array.from({ length: 10 }, (_, index) => `Dish ${index}`) })))
+    await assertSucceeds(setDoc(doc(firestore, 'restaurantSources', 'source-boundary'), restaurantSource('source-boundary', 'alice', { mentionedDishes: ['x'.repeat(100)] })))
+  })
+
+  it('allows an owner to create, read, update, and delete a source with a null URL', async () => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    const source = doc(firestore, 'restaurantSources', 'source-1')
+    await assertSucceeds(setDoc(source, restaurantSource('source-1', 'alice')))
+    await assertSucceeds(getDoc(source))
+    await assertSucceeds(updateDoc(source, { sourceText: 'Updated source', sourceNote: 'Personal note', updatedAt: serverTimestamp() }))
+    await assertSucceeds(deleteDoc(source))
+  })
+
+  it('denies anonymous creation and cross-owner reads, updates, and deletes', async () => {
+    const anonymous = testEnvironment.unauthenticatedContext().firestore()
+    await assertFails(setDoc(doc(anonymous, 'restaurantSources', 'source-1'), restaurantSource('source-1', 'alice')))
+    await testEnvironment.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(), 'restaurantSources', 'source-1'), restaurantSource('source-1', 'alice'))
+    })
+    const bobSource = doc(testEnvironment.authenticatedContext('bob').firestore(), 'restaurantSources', 'source-1')
+    await assertFails(getDoc(bobSource))
+    await assertFails(updateDoc(bobSource, { sourceNote: 'Nope', updatedAt: serverTimestamp() }))
+    await assertFails(deleteDoc(bobSource))
+  })
+
+  it.each([
+    ['owner id', { ownerId: 'bob' }],
+    ['restaurant id', { restaurantId: 'restaurant-2' }],
+    ['created at', { createdAt: serverTimestamp() }]
+  ])('denies changing immutable source %s', async (_description, update) => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    const source = doc(firestore, 'restaurantSources', 'source-1')
+    await assertSucceeds(setDoc(source, restaurantSource('source-1', 'alice')))
+    await assertFails(updateDoc(source, { ...update, updatedAt: serverTimestamp() }))
+  })
+
+  it.each([
+    ['invalid platform', { sourcePlatform: 'Unknown' }],
+    ['overlong source text', { sourceText: 'x'.repeat(20001) }],
+    ['non-list dishes', { mentionedDishes: 'coffee' }],
+    ['eleven dishes', { mentionedDishes: Array.from({ length: 11 }, () => 'Dish') }],
+    ['number at second dish', { mentionedDishes: ['Coffee', 2] }],
+    ['null at fifth dish', { mentionedDishes: ['One', 'Two', 'Three', 'Four', null] }],
+    ['overlong tenth dish', { mentionedDishes: [...Array.from({ length: 9 }, () => 'Dish'), 'x'.repeat(101)] }],
+    ['empty dish', { mentionedDishes: [''] }],
+    ['unexpected field', { extra: true }]
+  ])('denies source creation with %s', async (_description, invalid) => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    await assertFails(setDoc(doc(firestore, 'restaurantSources', 'source-1'), restaurantSource('source-1', 'alice', invalid)))
   })
 })
 

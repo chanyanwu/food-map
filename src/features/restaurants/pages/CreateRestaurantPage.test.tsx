@@ -22,7 +22,7 @@ describe('CreateRestaurantPage', () => {
   })
 
   it('submits valid restaurant details for the authenticated user', async () => {
-    const repository = { createRestaurant: vi.fn().mockResolvedValue(undefined), getRestaurantsByOwner: vi.fn(), getRestaurantById: vi.fn(), updateRestaurant: vi.fn(), deleteRestaurant: vi.fn() }
+    const repository = { createRestaurant: vi.fn().mockResolvedValue('restaurant-1'), getRestaurantsByOwner: vi.fn(), getRestaurantById: vi.fn(), updateRestaurant: vi.fn(), deleteRestaurant: vi.fn() }
     renderPage(repository)
     fireEvent.change(await screen.findByRole('textbox', { name: '店家名稱' }), { target: { value: 'Food Map Cafe' } })
     fireEvent.change(screen.getByRole('textbox', { name: '地址' }), { target: { value: 'Taipei' } })
@@ -40,7 +40,7 @@ describe('CreateRestaurantPage', () => {
   })
 
   it('submits valid coordinates as numbers', async () => {
-    const repository = { createRestaurant: vi.fn().mockResolvedValue(undefined), getRestaurantsByOwner: vi.fn(), getRestaurantById: vi.fn(), updateRestaurant: vi.fn(), deleteRestaurant: vi.fn() }
+    const repository = { createRestaurant: vi.fn().mockResolvedValue('restaurant-1'), getRestaurantsByOwner: vi.fn(), getRestaurantById: vi.fn(), updateRestaurant: vi.fn(), deleteRestaurant: vi.fn() }
     renderPage(repository)
     fireEvent.change(await screen.findByRole('textbox', { name: '店家名稱' }), { target: { value: 'Food Map Cafe' } })
     fireEvent.change(screen.getByRole('textbox', { name: '緯度' }), { target: { value: '25.033' } })

@@ -30,11 +30,24 @@ To display restaurant locations, set `VITE_GOOGLE_MAPS_API_KEY` in `.env.local` 
 
 Nearby restaurants use the browser location only after selecting `使用目前位置`. The location is not written to Firestore. Nearby results are calculated from saved restaurant coordinates and show straight-line distance, not driving distance or travel time. Without `VITE_GOOGLE_MAPS_API_KEY`, nearby filtering, sorting, and the restaurant list still work; only the embedded map is unavailable. `在 Google Maps 開啟` uses a standard Maps search URL and needs no API key, opens the place in a new tab, and never adds it to a Google Maps saved list. This feature does not use Google Places, reviews, Directions, or Geocoding APIs.
 
+## Stage 4A: Social Content Import
+
+Authenticated users can open `#/restaurants/import` to save a social source link, manually pasted text, personal notes, and up to five local screenshots. Source links are stored only as links: Food Map does not fetch social pages, download or parse short videos, expand short URLs, or use Google Places or Google reviews.
+
+OCR runs only after the user chooses `開始辨識文字`. It uses Tesseract.js in the browser with Traditional Chinese and English language data. The initial worker and language-data download can take time; screenshots are never sent to a third-party OCR service. Tesseract output is editable and may be wrong, so users must review a selected restaurant candidate before saving.
+
+Screenshots are validated locally as JPEG, PNG, or WebP, with a 10 MB limit per image. They are previewed with temporary browser object URLs and are not uploaded to Firebase Storage or kept after a refresh. Check that screenshots and source text do not contain personal information you do not want to save.
+
+`Restaurant` remains the clean restaurant record. Each submitted import also creates a separate `RestaurantSource` record containing the source platform, nullable URL, combined source text, personal note, and up to 10 mentioned dishes of at most 100 characters each. A restaurant can therefore have multiple future sources. Restaurant creation happens before source creation; if the source write fails, the UI reports that partial result and provides a retry for the source rather than pretending the import fully succeeded.
+
+Stage 4B may consider user-authorized short-video captions, speech-to-text, and AI-assisted structured extraction. None are part of Stage 4A.
+
 ## Routes
 
 - `#/` Private Stage 1 home; authentication required
 - `#/login` Google sign-in
 - `#/offline` Offline placeholder
+- `#/restaurants/import` Protected social-content import workflow
 - `#/*` Not Found
 
 The production Vite base is `/food-map/`; local Vite development still serves the app normally.

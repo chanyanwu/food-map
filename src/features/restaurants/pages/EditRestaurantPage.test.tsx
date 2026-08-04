@@ -11,7 +11,7 @@ const user = { id: 'alice', displayName: 'Alice', email: 'alice@example.com', ph
 const restaurant: Restaurant = { id: 'restaurant-1', ownerId: 'alice', name: 'Food Map Cafe', address: 'Taipei', category: 'Cafe', rating: 4, notes: 'Great coffee', latitude: null, longitude: null, photoURLs: [], createdAt: new Date('2026-08-03'), updatedAt: new Date('2026-08-03'), schemaVersion: 1 }
 
 function repository(overrides: Partial<RestaurantRepository> = {}): RestaurantRepository {
-  return { createRestaurant: vi.fn(), getRestaurantsByOwner: vi.fn(), getRestaurantById: vi.fn().mockResolvedValue(restaurant), updateRestaurant: vi.fn().mockResolvedValue(undefined), deleteRestaurant: vi.fn(), ...overrides }
+  return { createRestaurant: vi.fn().mockResolvedValue('restaurant-1'), getRestaurantsByOwner: vi.fn(), getRestaurantById: vi.fn().mockResolvedValue(restaurant), updateRestaurant: vi.fn().mockResolvedValue(undefined), deleteRestaurant: vi.fn(), ...overrides }
 }
 
 function renderPage(activeRepository: RestaurantRepository) {

@@ -1,7 +1,7 @@
 import type { CreateRestaurantInput, Restaurant, UpdateRestaurantInput } from '../models/restaurant'
 
 export interface RestaurantRepository {
-  createRestaurant(input: CreateRestaurantInput): Promise<void>
+  createRestaurant(input: CreateRestaurantInput): Promise<string>
   getRestaurantsByOwner(ownerId: string): Promise<Restaurant[]>
   getRestaurantById(restaurantId: string): Promise<Restaurant | null>
   updateRestaurant(restaurantId: string, ownerId: string, input: UpdateRestaurantInput): Promise<void>

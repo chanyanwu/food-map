@@ -51,6 +51,42 @@ service cloud.firestore {
         && data.schemaVersion is int && data.schemaVersion == 1;
     }
 
+    function validSourcePlatform(value) {
+      return value == 'Instagram' || value == 'Threads' || value == 'Facebook'
+        || value == 'TikTok' || value == 'YouTube' || value == '小紅書'
+        || value == '部落格' || value == '其他';
+    }
+
+    function validDishAt(value, index) {
+      return value.size() <= index
+        || value[index] is string && value[index].size() > 0 && value[index].size() <= 100;
+    }
+
+    function validMentionedDishes(value) {
+      return value is list && value.size() <= 10
+        && validDishAt(value, 0) && validDishAt(value, 1) && validDishAt(value, 2)
+        && validDishAt(value, 3) && validDishAt(value, 4) && validDishAt(value, 5)
+        && validDishAt(value, 6) && validDishAt(value, 7) && validDishAt(value, 8)
+        && validDishAt(value, 9);
+    }
+
+    function validRestaurantSource(data, sourceId) {
+      return data.keys().hasOnly(['id', 'restaurantId', 'ownerId', 'sourceType', 'sourcePlatform', 'sourceUrl', 'sourceText', 'sourceNote', 'mentionedDishes', 'createdAt', 'updatedAt', 'schemaVersion'])
+        && data.keys().hasAll(['id', 'restaurantId', 'ownerId', 'sourceType', 'sourcePlatform', 'sourceUrl', 'sourceText', 'sourceNote', 'mentionedDishes', 'createdAt', 'updatedAt', 'schemaVersion'])
+        && data.id == sourceId
+        && data.restaurantId is string && data.restaurantId.size() > 0
+        && data.ownerId == request.auth.uid
+        && data.sourceType == 'social-content'
+        && validSourcePlatform(data.sourcePlatform)
+        && (data.sourceUrl == null || data.sourceUrl is string && data.sourceUrl.size() <= 2048)
+        && data.sourceText is string && data.sourceText.size() <= 20000
+        && data.sourceNote is string && data.sourceNote.size() <= 5000
+        && validMentionedDishes(data.mentionedDishes)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.schemaVersion is int && data.schemaVersion == 1;
+    }
+
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow create: if isOwner(userId)
@@ -74,6 +110,23 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'address', 'category', 'rating', 'notes', 'latitude', 'longitude', 'updatedAt'])
         && request.resource.data.ownerId == resource.data.ownerId
         && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isOwner(resource.data.ownerId);
+    }
+
+    match /restaurantSources/{sourceId} {
+      allow get, list: if isOwner(resource.data.ownerId);
+      allow create: if request.auth != null
+        && validRestaurantSource(request.resource.data, sourceId)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isOwner(resource.data.ownerId)
+        && validRestaurantSource(request.resource.data, sourceId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sourcePlatform', 'sourceUrl', 'sourceText', 'sourceNote', 'mentionedDishes', 'updatedAt'])
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.restaurantId == resource.data.restaurantId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.schemaVersion == resource.data.schemaVersion
         && request.resource.data.updatedAt == request.time;
       allow delete: if isOwner(resource.data.ownerId);
     }

@@ -15,7 +15,7 @@ vi.mock('./RestaurantList', () => ({ RestaurantList: (props: { restaurants: Rest
 vi.mock('./RestaurantMap', () => ({ RestaurantMap: (props: { restaurants: Restaurant[]; selectedRestaurantId: string | null; onSelectRestaurant(id: string): void }) => { mapSpy(props); return <><p>地圖 {props.restaurants.map(restaurant => restaurant.name).join(',')}</p><p>地圖選取 {props.selectedRestaurantId}</p></> } }))
 
 function repository(restaurants: Restaurant[] = [restaurant]): RestaurantRepository {
-  return { createRestaurant: vi.fn(), getRestaurantsByOwner: vi.fn().mockResolvedValue(restaurants), getRestaurantById: vi.fn(), updateRestaurant: vi.fn(), deleteRestaurant: vi.fn() }
+  return { createRestaurant: vi.fn().mockResolvedValue('restaurant-1'), getRestaurantsByOwner: vi.fn().mockResolvedValue(restaurants), getRestaurantById: vi.fn(), updateRestaurant: vi.fn(), deleteRestaurant: vi.fn() }
 }
 
 function renderCollection(activeRepository: RestaurantRepository, requestLocation = vi.fn()) {
