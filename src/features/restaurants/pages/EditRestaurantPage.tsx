@@ -4,6 +4,7 @@ import { firebaseWebConfig } from '../../../app/config/firebase'
 import { createFirebaseServices } from '../../../core/firebase/firebaseClient'
 import { Brand } from '../../../shared/components/Brand'
 import { useAuth } from '../../authentication/hooks/useAuth'
+import { validateCoordinates } from '../models/coordinates'
 import type { Restaurant, UpdateRestaurantInput } from '../models/restaurant'
 import { FirebaseRestaurantRepository } from '../repositories/FirebaseRestaurantRepository'
 import type { RestaurantRepository } from '../repositories/RestaurantRepository'
@@ -18,10 +19,12 @@ interface RestaurantForm {
   category: string
   rating: string
   notes: string
+  latitude: string
+  longitude: string
 }
 
 function toForm(restaurant: Restaurant): RestaurantForm {
-  return { name: restaurant.name, address: restaurant.address, category: restaurant.category, rating: restaurant.rating?.toString() ?? '', notes: restaurant.notes }
+  return { name: restaurant.name, address: restaurant.address, category: restaurant.category, rating: restaurant.rating?.toString() ?? '', notes: restaurant.notes, latitude: restaurant.latitude?.toString() ?? '', longitude: restaurant.longitude?.toString() ?? '' }
 }
 
 function toFriendlyEditError(error: unknown): string {
@@ -73,7 +76,12 @@ export function EditRestaurantPage({ repository }: EditRestaurantPageProps) {
       setError('請填寫店家名稱。')
       return
     }
-    const input: UpdateRestaurantInput = { name, address: form.address.trim(), category: form.category.trim(), rating: form.rating === '' ? null : Number(form.rating), notes: form.notes.trim() }
+    const coordinateValidation = validateCoordinates(form.latitude, form.longitude)
+    if (!coordinateValidation.valid) {
+      setError(coordinateValidation.message)
+      return
+    }
+    const input: UpdateRestaurantInput = { name, address: form.address.trim(), category: form.category.trim(), rating: form.rating === '' ? null : Number(form.rating), notes: form.notes.trim(), ...coordinateValidation.coordinates }
     setError(null)
     setIsSubmitting(true)
     try {
@@ -92,5 +100,5 @@ export function EditRestaurantPage({ repository }: EditRestaurantPageProps) {
   if (status === 'error') return <main className="app-shell"><section className="page"><p role="alert">店家暫時無法載入，請稍後再試。</p></section></main>
   if (!form) return null
 
-  return <main className="app-shell"><section className="page" aria-labelledby="edit-restaurant-title"><Brand /><div className="hero-copy"><p className="eyebrow">編輯店家</p><h1 id="edit-restaurant-title" className="display">更新這間店的資料。</h1></div><form className="restaurant-form card" onSubmit={event => void submit(event)} noValidate><label>店家名稱<input name="name" value={form.name} onChange={event => updateForm('name', event.target.value)} required /></label><label>地址<input name="address" value={form.address} onChange={event => updateForm('address', event.target.value)} /></label><label>類別<input name="category" value={form.category} onChange={event => updateForm('category', event.target.value)} /></label><label>評分<select name="rating" value={form.rating} onChange={event => updateForm('rating', event.target.value)}><option value="">未評分</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label><label>備註<textarea name="notes" value={form.notes} onChange={event => updateForm('notes', event.target.value)} /></label>{error && <p className="form-error" role="alert">{error}</p>}<button className="button" type="submit" disabled={isSubmitting}>{isSubmitting ? '儲存中...' : '儲存變更'}</button></form></section></main>
+  return <main className="app-shell"><section className="page" aria-labelledby="edit-restaurant-title"><Brand /><div className="hero-copy"><p className="eyebrow">編輯店家</p><h1 id="edit-restaurant-title" className="display">更新這間店的資料。</h1></div><form className="restaurant-form card" onSubmit={event => void submit(event)} noValidate><label>店家名稱<input name="name" value={form.name} onChange={event => updateForm('name', event.target.value)} required /></label><label>地址<input name="address" value={form.address} onChange={event => updateForm('address', event.target.value)} /></label><label>類別<input name="category" value={form.category} onChange={event => updateForm('category', event.target.value)} /></label><label>評分<select name="rating" value={form.rating} onChange={event => updateForm('rating', event.target.value)}><option value="">未評分</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label><div className="coordinate-fields"><label>緯度<input name="latitude" inputMode="decimal" value={form.latitude} onChange={event => updateForm('latitude', event.target.value)} /></label><label>經度<input name="longitude" inputMode="decimal" value={form.longitude} onChange={event => updateForm('longitude', event.target.value)} /></label></div><label>備註<textarea name="notes" value={form.notes} onChange={event => updateForm('notes', event.target.value)} /></label>{error && <p className="form-error" role="alert">{error}</p>}<button className="button" type="submit" disabled={isSubmitting}>{isSubmitting ? '儲存中...' : '儲存變更'}</button></form></section></main>
 }

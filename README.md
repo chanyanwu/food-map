@@ -26,6 +26,8 @@ Copy `.env.example` to `.env.local` before connecting Firebase locally. Do not c
 
 Set `VITE_USE_FIREBASE_EMULATOR=true` only for local development after starting `npm run emulators`. Production builds ignore this flag, so they never automatically connect to localhost.
 
+To display restaurant locations, set `VITE_GOOGLE_MAPS_API_KEY` in `.env.local` to a browser-restricted API key with the Maps JavaScript API enabled. The app shows `尚未設定 Google Maps API Key` instead of loading a map when it is absent. Do not use a server key or commit a real key.
+
 ## Routes
 
 - `#/` Private Stage 1 home; authentication required

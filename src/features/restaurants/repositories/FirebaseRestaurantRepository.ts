@@ -15,8 +15,8 @@ export class FirebaseRestaurantRepository implements RestaurantRepository {
       category: input.category,
       rating: input.rating,
       notes: input.notes,
-      latitude: null,
-      longitude: null,
+      latitude: input.latitude,
+      longitude: input.longitude,
       photoURLs: [],
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -68,11 +68,15 @@ function toRestaurant(snapshot: QueryDocumentSnapshot<DocumentData>): Restaurant
     category: data.category,
     rating: data.rating,
     notes: data.notes,
-    latitude: data.latitude,
-    longitude: data.longitude,
+    latitude: toNullableNumber(data.latitude),
+    longitude: toNullableNumber(data.longitude),
     photoURLs: data.photoURLs,
     createdAt: data.createdAt.toDate(),
     updatedAt: data.updatedAt.toDate(),
     schemaVersion: data.schemaVersion
   }
+}
+
+function toNullableNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
 }

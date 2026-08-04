@@ -34,6 +34,7 @@ a { color: inherit; }
 .restaurant-form label { display: grid; gap: var(--space-1); color: var(--color-muted); font-weight: 700; }
 .restaurant-form input, .restaurant-form select, .restaurant-form textarea { width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border: 2px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); }
 .restaurant-form textarea { min-height: 7rem; resize: vertical; }
+.coordinate-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 .restaurant-form input:focus-visible, .restaurant-form select:focus-visible, .restaurant-form textarea:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
 .restaurant-list { display: grid; gap: var(--space-3); }
 .restaurant-list h2, .restaurant-list h3, .restaurant-list p { margin: 0; }
@@ -48,6 +49,12 @@ a { color: inherit; }
 .restaurant-notes { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .restaurant-card-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-1); }
 .restaurant-card-actions .button { min-height: 40px; padding: 0.45rem 0.75rem; }
+.restaurant-overview { display: grid; gap: var(--space-5); }
+.restaurant-map { display: grid; min-height: clamp(18rem, 48vw, 32rem); overflow: hidden; border: 2px solid var(--color-line); border-radius: var(--radius-control); }
+.restaurant-map > div:last-child { min-height: 18rem; }
+.restaurant-map-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--color-surface); }
+.restaurant-map-heading h2, .restaurant-map-heading p { margin: 0; }
+.restaurant-map-heading p { color: var(--color-muted); }
 
 @media (min-width: 48rem) {
   .app-shell { padding: var(--space-6); }
@@ -55,5 +62,7 @@ a { color: inherit; }
   .page > .brand { grid-column: 1 / -1; align-self: start; }
   .page > .hero-copy { grid-column: 1; }
   .page > .feature-list, .page > .login-card, .page > .notice, .page > .restaurant-form, .page > .restaurant-list { grid-column: 2; }
+  .page > .restaurant-overview { grid-column: 1 / -1; }
+  .restaurant-overview { grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr); align-items: start; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }

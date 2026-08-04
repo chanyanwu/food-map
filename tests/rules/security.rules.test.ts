@@ -152,6 +152,13 @@ describe('Firestore restaurant rules', () => {
     await assertSucceeds(updateDoc(restaurantReference, { notes: 'Updated', updatedAt: serverTimestamp() }))
   })
 
+  it('allows an owner to update restaurant coordinates', async () => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')
+    await assertSucceeds(setDoc(restaurantReference, restaurant('restaurant-1', 'alice')))
+    await assertSucceeds(updateDoc(restaurantReference, { latitude: 25.033, longitude: 121.5654, updatedAt: serverTimestamp() }))
+  })
+
   it('denies changing a restaurant owner', async () => {
     const firestore = testEnvironment.authenticatedContext('alice').firestore()
     const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')

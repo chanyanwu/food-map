@@ -4,6 +4,7 @@ import { firebaseWebConfig } from '../../../app/config/firebase'
 import { createFirebaseServices } from '../../../core/firebase/firebaseClient'
 import { Brand } from '../../../shared/components/Brand'
 import { useAuth } from '../../authentication/hooks/useAuth'
+import { validateCoordinates } from '../models/coordinates'
 import type { CreateRestaurantInput } from '../models/restaurant'
 import { FirebaseRestaurantRepository } from '../repositories/FirebaseRestaurantRepository'
 import type { RestaurantRepository } from '../repositories/RestaurantRepository'
@@ -18,9 +19,11 @@ interface RestaurantForm {
   category: string
   rating: string
   notes: string
+  latitude: string
+  longitude: string
 }
 
-const emptyForm: RestaurantForm = { name: '', address: '', category: '', rating: '', notes: '' }
+const emptyForm: RestaurantForm = { name: '', address: '', category: '', rating: '', notes: '', latitude: '', longitude: '' }
 
 function toFriendlyRestaurantError(error: unknown): string {
   if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'permission-denied') {
@@ -53,6 +56,11 @@ export function CreateRestaurantPage({ repository }: CreateRestaurantPageProps) 
       return
     }
 
+    const coordinateValidation = validateCoordinates(form.latitude, form.longitude)
+    if (!coordinateValidation.valid) {
+      setError(coordinateValidation.message)
+      return
+    }
     const rating = form.rating === '' ? null : Number(form.rating)
     const input: CreateRestaurantInput = {
       ownerId,
@@ -60,7 +68,8 @@ export function CreateRestaurantPage({ repository }: CreateRestaurantPageProps) 
       address: form.address.trim(),
       category: form.category.trim(),
       rating,
-      notes: form.notes.trim()
+      notes: form.notes.trim(),
+      ...coordinateValidation.coordinates
     }
 
     setError(null)
@@ -91,6 +100,7 @@ export function CreateRestaurantPage({ repository }: CreateRestaurantPageProps) 
           <label>地址<input name="address" value={form.address} onChange={event => updateForm('address', event.target.value)} /></label>
           <label>類別<input name="category" value={form.category} onChange={event => updateForm('category', event.target.value)} /></label>
           <label>評分<select name="rating" value={form.rating} onChange={event => updateForm('rating', event.target.value)}><option value="">未評分</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
+          <div className="coordinate-fields"><label>緯度<input name="latitude" inputMode="decimal" value={form.latitude} onChange={event => updateForm('latitude', event.target.value)} /></label><label>經度<input name="longitude" inputMode="decimal" value={form.longitude} onChange={event => updateForm('longitude', event.target.value)} /></label></div>
           <label>備註<textarea name="notes" value={form.notes} onChange={event => updateForm('notes', event.target.value)} /></label>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="button" type="submit" disabled={isSubmitting || !ownerId}>{isSubmitting ? '儲存中...' : '新增店家'}</button>

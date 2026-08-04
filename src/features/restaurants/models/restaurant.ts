@@ -21,6 +21,8 @@ export interface CreateRestaurantInput {
   category: string
   rating: number | null
   notes: string
+  latitude: number | null
+  longitude: number | null
 }
 
 export interface UpdateRestaurantInput {
@@ -29,4 +31,6 @@ export interface UpdateRestaurantInput {
   category: string
   rating: number | null
   notes: string
+  latitude: number | null
+  longitude: number | null
 }
