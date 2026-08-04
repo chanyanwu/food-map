@@ -19,7 +19,7 @@ function profile(id: string) {
   }
 }
 
-function restaurant(id: string, ownerId: string) {
+function restaurant(id: string, ownerId: string, coordinates: Record<string, unknown> = {}) {
   return {
     id,
     ownerId,
@@ -33,7 +33,8 @@ function restaurant(id: string, ownerId: string) {
     photoURLs: [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    schemaVersion: 1
+    schemaVersion: 1,
+    ...coordinates
   }
 }
 
@@ -159,6 +160,28 @@ describe('Firestore restaurant rules', () => {
     await assertSucceeds(updateDoc(restaurantReference, { latitude: 25.033, longitude: 121.5654, updatedAt: serverTimestamp() }))
   })
 
+  it('allows null, valid, and boundary restaurant coordinates', async () => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    await assertSucceeds(setDoc(doc(firestore, 'restaurants', 'restaurant-null'), restaurant('restaurant-null', 'alice')))
+    await assertSucceeds(setDoc(doc(firestore, 'restaurants', 'restaurant-valid'), restaurant('restaurant-valid', 'alice', { latitude: 25.033, longitude: 121.5654 })))
+    await assertSucceeds(setDoc(doc(firestore, 'restaurants', 'restaurant-minimum'), restaurant('restaurant-minimum', 'alice', { latitude: -90, longitude: -180 })))
+    await assertSucceeds(setDoc(doc(firestore, 'restaurants', 'restaurant-maximum'), restaurant('restaurant-maximum', 'alice', { latitude: 90, longitude: 180 })))
+  })
+
+  it.each([
+    ['latitude above 90', { latitude: 90.1, longitude: 121.5654 }],
+    ['latitude below -90', { latitude: -90.1, longitude: 121.5654 }],
+    ['longitude above 180', { latitude: 25.033, longitude: 180.1 }],
+    ['longitude below -180', { latitude: 25.033, longitude: -180.1 }],
+    ['latitude without longitude', { latitude: 25.033, longitude: null }],
+    ['longitude without latitude', { latitude: null, longitude: 121.5654 }],
+    ['string latitude', { latitude: '25.033', longitude: 121.5654 }],
+    ['string longitude', { latitude: 25.033, longitude: '121.5654' }]
+  ])('denies restaurant creation with %s', async (_description, coordinates) => {
+    const firestore = testEnvironment.authenticatedContext('alice').firestore()
+    await assertFails(setDoc(doc(firestore, 'restaurants', 'restaurant-invalid'), restaurant('restaurant-invalid', 'alice', coordinates)))
+  })
+
   it('denies changing a restaurant owner', async () => {
     const firestore = testEnvironment.authenticatedContext('alice').firestore()
     const restaurantReference = doc(firestore, 'restaurants', 'restaurant-1')
@@ -171,7 +194,7 @@ describe('Firestore restaurant rules', () => {
       await setDoc(doc(context.firestore(), 'restaurants', 'restaurant-1'), restaurant('restaurant-1', 'alice'))
     })
     const restaurantReference = doc(testEnvironment.authenticatedContext('bob').firestore(), 'restaurants', 'restaurant-1')
-    await assertFails(updateDoc(restaurantReference, { notes: 'Nope', updatedAt: serverTimestamp() }))
+    await assertFails(updateDoc(restaurantReference, { latitude: 25.033, longitude: 121.5654, updatedAt: serverTimestamp() }))
     await assertFails(deleteDoc(restaurantReference))
   })
 
@@ -182,6 +205,7 @@ describe('Firestore restaurant rules', () => {
     await assertFails(updateDoc(restaurantReference, { id: 'restaurant-2', updatedAt: serverTimestamp() }))
     await assertFails(updateDoc(restaurantReference, { createdAt: serverTimestamp(), updatedAt: serverTimestamp() }))
     await assertFails(updateDoc(restaurantReference, { schemaVersion: 2, updatedAt: serverTimestamp() }))
+    await assertFails(updateDoc(restaurantReference, { ownerId: 'bob', latitude: 25.033, longitude: 121.5654, updatedAt: serverTimestamp() }))
   })
 
   it('allows an owner to delete their restaurant', async () => {

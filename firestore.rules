@@ -10,7 +10,8 @@ service cloud.firestore {
     }
 
     function validProfile(data) {
-      return data.keys().hasOnly(['id', 'displayName', 'email', 'photoURL', 'createdAt', 'updatedAt', 'schemaVersion'])
+      return data.keys()
+        .hasOnly(['id', 'displayName', 'email', 'photoURL', 'createdAt', 'updatedAt', 'schemaVersion'])
         && data.keys().hasAll(['id', 'displayName', 'email', 'photoURL', 'createdAt', 'updatedAt', 'schemaVersion'])
         && data.id == request.auth.uid
         && isTextOrNull(data.displayName)
@@ -26,6 +27,13 @@ service cloud.firestore {
       return value is number && value >= 1 && value <= 5 || value == null;
     }
 
+    function validCoordinates(latitude, longitude) {
+      return latitude == null && longitude == null
+        || latitude is number && longitude is number
+          && latitude >= -90 && latitude <= 90
+          && longitude >= -180 && longitude <= 180;
+    }
+
     function validRestaurant(data, restaurantId) {
       return data.keys().hasOnly(['id', 'ownerId', 'name', 'address', 'category', 'rating', 'notes', 'latitude', 'longitude', 'photoURLs', 'createdAt', 'updatedAt', 'schemaVersion'])
         && data.keys().hasAll(['id', 'ownerId', 'name', 'address', 'category', 'rating', 'notes', 'latitude', 'longitude', 'photoURLs', 'createdAt', 'updatedAt', 'schemaVersion'])
@@ -36,8 +44,7 @@ service cloud.firestore {
         && data.category is string
         && isRatingOrNull(data.rating)
         && data.notes is string
-        && (data.latitude is number || data.latitude == null)
-        && (data.longitude is number || data.longitude == null)
+        && validCoordinates(data.latitude, data.longitude)
         && data.photoURLs is list
         && data.createdAt is timestamp
         && data.updatedAt is timestamp
