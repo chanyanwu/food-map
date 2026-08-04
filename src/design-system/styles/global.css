@@ -46,15 +46,28 @@ a { color: inherit; }
 .restaurant-card > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
 .restaurant-card h3 { font-size: 1.1rem; }
 .restaurant-rating { color: var(--color-brand-strong) !important; font-weight: 800; }
+.restaurant-distance { color: var(--color-mint) !important; font-weight: 800; }
 .restaurant-notes { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.restaurant-card--selected { border-color: var(--color-brand-strong); box-shadow: 0 0 0 3px rgb(189 91 65 / 18%); }
 .restaurant-card-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-1); }
 .restaurant-card-actions .button { min-height: 40px; padding: 0.45rem 0.75rem; }
 .restaurant-overview { display: grid; gap: var(--space-5); }
+.restaurant-collection { display: grid; gap: var(--space-5); grid-column: 1 / -1; }
+.nearby-controls { display: grid; gap: var(--space-3); padding: var(--space-4); }
+.nearby-controls h2, .nearby-controls p { margin: 0; }
+.nearby-controls p { color: var(--color-muted); }
+.nearby-controls label { display: grid; gap: var(--space-1); color: var(--color-muted); font-weight: 700; }
+.nearby-controls input, .nearby-controls select { width: min(100%, 28rem); min-height: 44px; padding: var(--space-2) var(--space-3); border: 2px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); }
+.nearby-control-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .restaurant-map { display: grid; min-height: clamp(18rem, 48vw, 32rem); overflow: hidden; border: 2px solid var(--color-line); border-radius: var(--radius-control); }
 .restaurant-map > div:last-child { min-height: 18rem; }
 .restaurant-map-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--color-surface); }
 .restaurant-map-heading h2, .restaurant-map-heading p { margin: 0; }
 .restaurant-map-heading p { color: var(--color-muted); }
+.restaurant-marker, .user-location-marker { display: inline-flex; padding: 0.25rem 0.5rem; border: 2px solid var(--color-brand-strong); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-brand-strong); font-size: 0.75rem; font-weight: 800; white-space: nowrap; }
+.restaurant-marker--selected { background: var(--color-brand); color: #fffaf3; }
+.user-location-marker { border-color: var(--color-mint); color: var(--color-mint); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 @media (min-width: 48rem) {
   .app-shell { padding: var(--space-6); }
@@ -62,7 +75,7 @@ a { color: inherit; }
   .page > .brand { grid-column: 1 / -1; align-self: start; }
   .page > .hero-copy { grid-column: 1; }
   .page > .feature-list, .page > .login-card, .page > .notice, .page > .restaurant-form, .page > .restaurant-list { grid-column: 2; }
-  .page > .restaurant-overview { grid-column: 1 / -1; }
+  .page > .restaurant-overview, .page > .restaurant-collection { grid-column: 1 / -1; }
   .restaurant-overview { grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr); align-items: start; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }

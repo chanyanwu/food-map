@@ -28,6 +28,8 @@ Set `VITE_USE_FIREBASE_EMULATOR=true` only for local development after starting 
 
 To display restaurant locations, set `VITE_GOOGLE_MAPS_API_KEY` in `.env.local` to a browser-restricted API key with the Maps JavaScript API enabled. The app shows `尚未設定 Google Maps API Key` instead of loading a map when it is absent. Do not use a server key or commit a real key.
 
+Nearby restaurants use the browser location only after selecting `使用目前位置`. The location is not written to Firestore. Nearby results are calculated from saved restaurant coordinates and show straight-line distance, not driving distance or travel time. Without `VITE_GOOGLE_MAPS_API_KEY`, nearby filtering, sorting, and the restaurant list still work; only the embedded map is unavailable. `在 Google Maps 開啟` uses a standard Maps search URL and needs no API key, opens the place in a new tab, and never adds it to a Google Maps saved list. This feature does not use Google Places, reviews, Directions, or Geocoding APIs.
+
 ## Routes
 
 - `#/` Private Stage 1 home; authentication required
